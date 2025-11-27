@@ -169,11 +169,9 @@ th, td {
 }
 
 /* Column widths */
-th:nth-child(1), td:nth-child(1) { width: 20%; } /* 引き換え時間 */
-th:nth-child(2), td:nth-child(2) { width: 15%; } /* ユーザーID */
-th:nth-child(3), td:nth-child(3) { width: 20%; } /* 帳號名 */
-th:nth-child(4), td:nth-child(4) { width: 20%; } /* 顯示名 */
-th:nth-child(5), td:nth-child(5) { width: 25%; } /* 報酬名 */
+th:nth-child(1), td:nth-child(1) { width: 30%; } /* 引き換え時間 */
+th:nth-child(2), td:nth-child(2) { width: 35%; } /* 名前 */
+th:nth-child(3), td:nth-child(3) { width: 35%; } /* 報酬名 */
 
 th {
     background-color: #9146ff;

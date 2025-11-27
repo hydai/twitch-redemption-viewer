@@ -94,12 +94,11 @@ function extractRedemptions(jsonData) {
     for (const entry of jsonData) {
         if (entry.message && entry.message.includes('REWARD REDEMPTION EVENT RECEIVED')) {
             const eventData = extractEventData(entry.message);
+            const redeemer = extractRedeemer(entry.message);
             if (eventData) {
                 redemptions.push({
                     redeemedAt: formatDateTime(eventData.redeemed_at),
-                    userId: eventData.user_id,
-                    userLogin: eventData.user_login,
-                    userName: eventData.user_name,
+                    redeemer: redeemer,
                     rewardTitle: eventData.reward?.title || ''
                 });
             }
@@ -110,6 +109,12 @@ function extractRedemptions(jsonData) {
     redemptions.sort((a, b) => a.redeemedAt.localeCompare(b.redeemedAt));
 
     return redemptions;
+}
+
+// Extract Redeemer from message
+function extractRedeemer(message) {
+    const match = message.match(/Redeemer: (.+)\n/);
+    return match ? match[1] : '';
 }
 
 // Extract JSON from message
@@ -183,17 +188,9 @@ function renderTable() {
         cellRedeemedAt.textContent = item.redeemedAt;
         row.appendChild(cellRedeemedAt);
 
-        const cellUserId = document.createElement('td');
-        cellUserId.textContent = item.userId;
-        row.appendChild(cellUserId);
-
-        const cellUserLogin = document.createElement('td');
-        cellUserLogin.textContent = item.userLogin;
-        row.appendChild(cellUserLogin);
-
-        const cellUserName = document.createElement('td');
-        cellUserName.textContent = item.userName;
-        row.appendChild(cellUserName);
+        const cellRedeemer = document.createElement('td');
+        cellRedeemer.textContent = item.redeemer;
+        row.appendChild(cellRedeemer);
 
         const cellRewardTitle = document.createElement('td');
         cellRewardTitle.textContent = item.rewardTitle;
@@ -208,12 +205,10 @@ function exportCSV() {
     const filteredData = getFilteredData();
     if (filteredData.length === 0) return;
 
-    const headers = ['引き換え時間', 'ユーザーID', '帳號名', '顯示名', '報酬名'];
+    const headers = ['引き換え時間', '名前', '報酬名'];
     const rows = filteredData.map(item => [
         item.redeemedAt,
-        item.userId,
-        item.userLogin,
-        item.userName,
+        item.redeemer,
         item.rewardTitle
     ]);
 
@@ -248,12 +243,10 @@ function exportExcel() {
     const filteredData = getFilteredData();
     if (filteredData.length === 0) return;
 
-    const headers = ['引き換え時間', 'ユーザーID', '帳號名', '顯示名', '報酬名'];
+    const headers = ['引き換え時間', '名前', '報酬名'];
     const data = filteredData.map(item => [
         item.redeemedAt,
-        item.userId,
-        item.userLogin,
-        item.userName,
+        item.redeemer,
         item.rewardTitle
     ]);
 
@@ -266,11 +259,9 @@ function exportExcel() {
 
     // Set column widths
     ws['!cols'] = [
-        { wch: 20 }, // 引き換え時間
-        { wch: 15 }, // ユーザーID
-        { wch: 20 }, // 帳號名
-        { wch: 20 }, // 顯示名
-        { wch: 25 }  // 報酬名
+        { wch: 25 }, // 引き換え時間
+        { wch: 35 }, // 名前
+        { wch: 30 }  // 報酬名
     ];
 
     XLSX.utils.book_append_sheet(wb, ws, '引き換え履歴');

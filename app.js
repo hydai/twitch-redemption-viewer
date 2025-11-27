@@ -94,11 +94,10 @@ function extractRedemptions(jsonData) {
     for (const entry of jsonData) {
         if (entry.message && entry.message.includes('REWARD REDEMPTION EVENT RECEIVED')) {
             const eventData = extractEventData(entry.message);
-            const redeemer = extractRedeemer(entry.message);
             if (eventData) {
                 redemptions.push({
                     redeemedAt: formatDateTime(eventData.redeemed_at),
-                    redeemer: redeemer,
+                    redeemer: formatRedeemer(eventData.user_name, eventData.user_login),
                     rewardTitle: eventData.reward?.title || ''
                 });
             }
@@ -111,10 +110,12 @@ function extractRedemptions(jsonData) {
     return redemptions;
 }
 
-// Extract Redeemer from message
-function extractRedeemer(message) {
-    const match = message.match(/Redeemer: (.+)\n/);
-    return match ? match[1] : '';
+// Format redeemer display name
+function formatRedeemer(userName, userLogin) {
+    if (userName === userLogin) {
+        return userName;
+    }
+    return `${userName} (${userLogin})`;
 }
 
 // Extract JSON from message

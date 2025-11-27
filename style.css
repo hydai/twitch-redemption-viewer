@@ -104,39 +104,24 @@ h1 {
     margin-bottom: 1.5rem;
 }
 
-.filter-label {
-    color: #666;
-    font-size: 0.875rem;
-    margin-bottom: 0.5rem;
-}
-
-.filter-buttons {
+.filter-toggle {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     gap: 0.5rem;
-}
-
-.btn-filter {
-    padding: 0.5rem 1rem;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    background-color: #fff;
-    color: #666;
-    font-size: 0.875rem;
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: inherit;
 }
 
-.btn-filter:hover {
-    border-color: #9146ff;
-    color: #9146ff;
+.filter-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #9146ff;
+    cursor: pointer;
 }
 
-.btn-filter.active {
-    background-color: #9146ff;
-    border-color: #9146ff;
-    color: #fff;
+.toggle-label {
+    color: #666;
+    font-size: 0.95rem;
+    user-select: none;
 }
 
 /* Result Section */

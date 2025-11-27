@@ -1,7 +1,6 @@
 // Global state
 let redemptionData = [];
-let uniqueRewards = [];
-let selectedRewards = new Set();
+let filterDailyOnly = true;
 
 // DOM Elements
 const dropZone = document.getElementById('dropZone');
@@ -13,7 +12,7 @@ const csvBtn = document.getElementById('csvBtn');
 const excelBtn = document.getElementById('excelBtn');
 const errorMessage = document.getElementById('errorMessage');
 const loading = document.getElementById('loading');
-const filterButtons = document.getElementById('filterButtons');
+const filterToggle = document.getElementById('filterToggle');
 
 // Event Listeners
 dropZone.addEventListener('click', () => fileInput.click());
@@ -23,6 +22,10 @@ dropZone.addEventListener('drop', handleDrop);
 fileInput.addEventListener('change', handleFileSelect);
 csvBtn.addEventListener('click', exportCSV);
 excelBtn.addEventListener('click', exportExcel);
+filterToggle.addEventListener('change', (e) => {
+    filterDailyOnly = e.target.checked;
+    renderTable();
+});
 
 // Drag and Drop Handlers
 function handleDragOver(e) {
@@ -147,60 +150,18 @@ function displayResults() {
         return;
     }
 
-    // Collect unique rewards and select all by default
-    collectUniqueRewards();
-
-    // Render filter buttons
-    renderFilterButtons();
-
     // Render table
     renderTable();
 
     resultSection.classList.remove('hidden');
 }
 
-// Collect unique reward names
-function collectUniqueRewards() {
-    const rewards = new Set(redemptionData.map(item => item.rewardTitle));
-    uniqueRewards = [...rewards].sort();
-    selectedRewards = new Set(uniqueRewards); // Select all by default
-}
-
-// Render filter buttons
-function renderFilterButtons() {
-    // Clear existing buttons
-    while (filterButtons.firstChild) {
-        filterButtons.removeChild(filterButtons.firstChild);
-    }
-
-    // Create buttons
-    for (const reward of uniqueRewards) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'btn-filter';
-        if (selectedRewards.has(reward)) {
-            btn.classList.add('active');
-        }
-        btn.textContent = reward;
-        btn.addEventListener('click', () => toggleRewardFilter(reward));
-        filterButtons.appendChild(btn);
-    }
-}
-
-// Toggle reward filter
-function toggleRewardFilter(reward) {
-    if (selectedRewards.has(reward)) {
-        selectedRewards.delete(reward);
-    } else {
-        selectedRewards.add(reward);
-    }
-    renderFilterButtons();
-    renderTable();
-}
-
 // Get filtered data
 function getFilteredData() {
-    return redemptionData.filter(item => selectedRewards.has(item.rewardTitle));
+    if (filterDailyOnly) {
+        return redemptionData.filter(item => item.rewardTitle === 'Dailyおみくじ');
+    }
+    return redemptionData;
 }
 
 // Render table with filtered data

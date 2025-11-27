@@ -97,8 +97,10 @@ function extractRedemptions(jsonData) {
             if (eventData) {
                 redemptions.push({
                     redeemedAt: formatDateTime(eventData.redeemed_at),
-                    userName: eventData.user_name,
                     userId: eventData.user_id,
+                    userLogin: eventData.user_login,
+                    userName: eventData.user_name,
+                    userInput: eventData.user_input || '',
                     rewardTitle: eventData.reward?.title || ''
                 });
             }
@@ -182,13 +184,21 @@ function renderTable() {
         cellRedeemedAt.textContent = item.redeemedAt;
         row.appendChild(cellRedeemedAt);
 
+        const cellUserId = document.createElement('td');
+        cellUserId.textContent = item.userId;
+        row.appendChild(cellUserId);
+
+        const cellUserLogin = document.createElement('td');
+        cellUserLogin.textContent = item.userLogin;
+        row.appendChild(cellUserLogin);
+
         const cellUserName = document.createElement('td');
         cellUserName.textContent = item.userName;
         row.appendChild(cellUserName);
 
-        const cellUserId = document.createElement('td');
-        cellUserId.textContent = item.userId;
-        row.appendChild(cellUserId);
+        const cellUserInput = document.createElement('td');
+        cellUserInput.textContent = item.userInput;
+        row.appendChild(cellUserInput);
 
         const cellRewardTitle = document.createElement('td');
         cellRewardTitle.textContent = item.rewardTitle;
@@ -203,11 +213,13 @@ function exportCSV() {
     const filteredData = getFilteredData();
     if (filteredData.length === 0) return;
 
-    const headers = ['引き換え時間', 'ユーザー名', 'ユーザーID', '報酬名'];
+    const headers = ['引き換え時間', 'ユーザーID', '帳號名', '顯示名', '留言', '報酬名'];
     const rows = filteredData.map(item => [
         item.redeemedAt,
-        item.userName,
         item.userId,
+        item.userLogin,
+        item.userName,
+        item.userInput,
         item.rewardTitle
     ]);
 
@@ -242,11 +254,13 @@ function exportExcel() {
     const filteredData = getFilteredData();
     if (filteredData.length === 0) return;
 
-    const headers = ['引き換え時間', 'ユーザー名', 'ユーザーID', '報酬名'];
+    const headers = ['引き換え時間', 'ユーザーID', '帳號名', '顯示名', '留言', '報酬名'];
     const data = filteredData.map(item => [
         item.redeemedAt,
-        item.userName,
         item.userId,
+        item.userLogin,
+        item.userName,
+        item.userInput,
         item.rewardTitle
     ]);
 
@@ -260,8 +274,10 @@ function exportExcel() {
     // Set column widths
     ws['!cols'] = [
         { wch: 20 }, // 引き換え時間
-        { wch: 20 }, // ユーザー名
         { wch: 15 }, // ユーザーID
+        { wch: 20 }, // 帳號名
+        { wch: 20 }, // 顯示名
+        { wch: 30 }, // 留言
         { wch: 25 }  // 報酬名
     ];
 

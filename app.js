@@ -1,5 +1,7 @@
 // Global state
 let redemptionData = [];
+let uniqueRewards = [];
+let selectedRewards = new Set();
 
 // DOM Elements
 const dropZone = document.getElementById('dropZone');
@@ -11,6 +13,7 @@ const csvBtn = document.getElementById('csvBtn');
 const excelBtn = document.getElementById('excelBtn');
 const errorMessage = document.getElementById('errorMessage');
 const loading = document.getElementById('loading');
+const filterButtons = document.getElementById('filterButtons');
 
 // Event Listeners
 dropZone.addEventListener('click', () => fileInput.click());
@@ -144,14 +147,74 @@ function displayResults() {
         return;
     }
 
-    resultCount.textContent = `${redemptionData.length}件の引き換えが見つかりました`;
+    // Collect unique rewards and select all by default
+    collectUniqueRewards();
+
+    // Render filter buttons
+    renderFilterButtons();
+
+    // Render table
+    renderTable();
+
+    resultSection.classList.remove('hidden');
+}
+
+// Collect unique reward names
+function collectUniqueRewards() {
+    const rewards = new Set(redemptionData.map(item => item.rewardTitle));
+    uniqueRewards = [...rewards].sort();
+    selectedRewards = new Set(uniqueRewards); // Select all by default
+}
+
+// Render filter buttons
+function renderFilterButtons() {
+    // Clear existing buttons
+    while (filterButtons.firstChild) {
+        filterButtons.removeChild(filterButtons.firstChild);
+    }
+
+    // Create buttons
+    for (const reward of uniqueRewards) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-filter';
+        if (selectedRewards.has(reward)) {
+            btn.classList.add('active');
+        }
+        btn.textContent = reward;
+        btn.addEventListener('click', () => toggleRewardFilter(reward));
+        filterButtons.appendChild(btn);
+    }
+}
+
+// Toggle reward filter
+function toggleRewardFilter(reward) {
+    if (selectedRewards.has(reward)) {
+        selectedRewards.delete(reward);
+    } else {
+        selectedRewards.add(reward);
+    }
+    renderFilterButtons();
+    renderTable();
+}
+
+// Get filtered data
+function getFilteredData() {
+    return redemptionData.filter(item => selectedRewards.has(item.rewardTitle));
+}
+
+// Render table with filtered data
+function renderTable() {
+    const filteredData = getFilteredData();
+
+    resultCount.textContent = `${filteredData.length}件の引き換えが見つかりました`;
 
     // Clear existing rows
     while (tableBody.firstChild) {
         tableBody.removeChild(tableBody.firstChild);
     }
 
-    for (const item of redemptionData) {
+    for (const item of filteredData) {
         const row = document.createElement('tr');
 
         const cellRedeemedAt = document.createElement('td');
@@ -172,16 +235,15 @@ function displayResults() {
 
         tableBody.appendChild(row);
     }
-
-    resultSection.classList.remove('hidden');
 }
 
 // CSV Export
 function exportCSV() {
-    if (redemptionData.length === 0) return;
+    const filteredData = getFilteredData();
+    if (filteredData.length === 0) return;
 
     const headers = ['引き換え時間', 'ユーザー名', 'ユーザーID', '報酬名'];
-    const rows = redemptionData.map(item => [
+    const rows = filteredData.map(item => [
         item.redeemedAt,
         item.userName,
         item.userId,
@@ -216,10 +278,11 @@ function csvEscape(value) {
 
 // Excel Export
 function exportExcel() {
-    if (redemptionData.length === 0) return;
+    const filteredData = getFilteredData();
+    if (filteredData.length === 0) return;
 
     const headers = ['引き換え時間', 'ユーザー名', 'ユーザーID', '報酬名'];
-    const data = redemptionData.map(item => [
+    const data = filteredData.map(item => [
         item.redeemedAt,
         item.userName,
         item.userId,

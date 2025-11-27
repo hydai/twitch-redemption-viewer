@@ -99,6 +99,46 @@ h1 {
     color: #9146ff;
 }
 
+/* Filter Section */
+.filter-section {
+    margin-bottom: 1.5rem;
+}
+
+.filter-label {
+    color: #666;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.btn-filter {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background-color: #fff;
+    color: #666;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-filter:hover {
+    border-color: #9146ff;
+    color: #9146ff;
+}
+
+.btn-filter.active {
+    background-color: #9146ff;
+    border-color: #9146ff;
+    color: #fff;
+}
+
 /* Result Section */
 .result-section {
     margin-top: 2rem;

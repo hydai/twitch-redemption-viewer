@@ -1,6 +1,5 @@
 // Global state
 let redemptionData = [];
-let filterDailyOnly = true;
 
 // DOM Elements
 const dropZone = document.getElementById('dropZone');
@@ -12,7 +11,6 @@ const csvBtn = document.getElementById('csvBtn');
 const excelBtn = document.getElementById('excelBtn');
 const errorMessage = document.getElementById('errorMessage');
 const loading = document.getElementById('loading');
-const filterToggle = document.getElementById('filterToggle');
 
 // Event Listeners
 dropZone.addEventListener('click', () => fileInput.click());
@@ -22,10 +20,6 @@ dropZone.addEventListener('drop', handleDrop);
 fileInput.addEventListener('change', handleFileSelect);
 csvBtn.addEventListener('click', exportCSV);
 excelBtn.addEventListener('click', exportExcel);
-filterToggle.addEventListener('change', (e) => {
-    filterDailyOnly = e.target.checked;
-    renderTable();
-});
 
 // Drag and Drop Handlers
 function handleDragOver(e) {
@@ -87,7 +81,7 @@ function processFile(file) {
     reader.readAsText(file);
 }
 
-// Extract Redemption Events
+// Extract Redemption Events (only Dailyおみくじ)
 function extractRedemptions(jsonData) {
     const redemptions = [];
 
@@ -95,17 +89,16 @@ function extractRedemptions(jsonData) {
         if (entry.message && entry.message.includes('REWARD REDEMPTION EVENT RECEIVED')) {
             const eventData = extractEventData(entry.message);
             if (eventData) {
-                redemptions.push({
-                    redeemedAt: formatDateTime(eventData.redeemed_at),
-                    redeemer: formatRedeemer(eventData.user_name, eventData.user_login),
-                    rewardTitle: eventData.reward?.title || ''
-                });
+                const rewardTitle = eventData.reward?.title || '';
+                // Only include Dailyおみくじ redemptions
+                if (rewardTitle === 'Dailyおみくじ') {
+                    redemptions.push({
+                        redeemer: formatRedeemer(eventData.user_name, eventData.user_login)
+                    });
+                }
             }
         }
     }
-
-    // Sort by redemption time (oldest first)
-    redemptions.sort((a, b) => a.redeemedAt.localeCompare(b.redeemedAt));
 
     return redemptions;
 }
@@ -132,23 +125,6 @@ function extractEventData(message) {
     return null;
 }
 
-// Format ISO datetime to readable format
-function formatDateTime(isoString) {
-    if (!isoString) return '';
-    try {
-        const date = new Date(isoString);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        const seconds = String(date.getSeconds()).padStart(2, '0');
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    } catch (e) {
-        return isoString;
-    }
-}
-
 // Display Results
 function displayResults() {
     if (redemptionData.length === 0) {
@@ -163,39 +139,21 @@ function displayResults() {
     resultSection.classList.remove('hidden');
 }
 
-// Get filtered data
-function getFilteredData() {
-    if (filterDailyOnly) {
-        return redemptionData.filter(item => item.rewardTitle === 'Dailyおみくじ');
-    }
-    return redemptionData;
-}
-
-// Render table with filtered data
+// Render table
 function renderTable() {
-    const filteredData = getFilteredData();
-
-    resultCount.textContent = `${filteredData.length}件の引き換えが見つかりました`;
+    resultCount.textContent = `${redemptionData.length}件の引き換えが見つかりました`;
 
     // Clear existing rows
     while (tableBody.firstChild) {
         tableBody.removeChild(tableBody.firstChild);
     }
 
-    for (const item of filteredData) {
+    for (const item of redemptionData) {
         const row = document.createElement('tr');
-
-        const cellRedeemedAt = document.createElement('td');
-        cellRedeemedAt.textContent = item.redeemedAt;
-        row.appendChild(cellRedeemedAt);
 
         const cellRedeemer = document.createElement('td');
         cellRedeemer.textContent = item.redeemer;
         row.appendChild(cellRedeemer);
-
-        const cellRewardTitle = document.createElement('td');
-        cellRewardTitle.textContent = item.rewardTitle;
-        row.appendChild(cellRewardTitle);
 
         tableBody.appendChild(row);
     }
@@ -203,15 +161,10 @@ function renderTable() {
 
 // CSV Export
 function exportCSV() {
-    const filteredData = getFilteredData();
-    if (filteredData.length === 0) return;
+    if (redemptionData.length === 0) return;
 
-    const headers = ['引き換え時間', '名前', '報酬名'];
-    const rows = filteredData.map(item => [
-        item.redeemedAt,
-        item.redeemer,
-        item.rewardTitle
-    ]);
+    const headers = ['名前'];
+    const rows = redemptionData.map(item => [item.redeemer]);
 
     let csvContent = '';
 
@@ -241,15 +194,10 @@ function csvEscape(value) {
 
 // Excel Export
 function exportExcel() {
-    const filteredData = getFilteredData();
-    if (filteredData.length === 0) return;
+    if (redemptionData.length === 0) return;
 
-    const headers = ['引き換え時間', '名前', '報酬名'];
-    const data = filteredData.map(item => [
-        item.redeemedAt,
-        item.redeemer,
-        item.rewardTitle
-    ]);
+    const headers = ['名前'];
+    const data = redemptionData.map(item => [item.redeemer]);
 
     // Add headers as first row
     const worksheetData = [headers, ...data];
@@ -260,9 +208,7 @@ function exportExcel() {
 
     // Set column widths
     ws['!cols'] = [
-        { wch: 25 }, // 引き換え時間
-        { wch: 35 }, // 名前
-        { wch: 30 }  // 報酬名
+        { wch: 35 } // 名前
     ];
 
     XLSX.utils.book_append_sheet(wb, ws, '引き換え履歴');

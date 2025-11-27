@@ -99,31 +99,6 @@ h1 {
     color: #9146ff;
 }
 
-/* Filter Section */
-.filter-section {
-    margin-bottom: 1.5rem;
-}
-
-.filter-toggle {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-}
-
-.filter-toggle input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: #9146ff;
-    cursor: pointer;
-}
-
-.toggle-label {
-    color: #666;
-    font-size: 0.95rem;
-    user-select: none;
-}
-
 /* Result Section */
 .result-section {
     margin-top: 2rem;
@@ -169,9 +144,7 @@ th, td {
 }
 
 /* Column widths */
-th:nth-child(1), td:nth-child(1) { width: 30%; } /* 引き換え時間 */
-th:nth-child(2), td:nth-child(2) { width: 35%; } /* 名前 */
-th:nth-child(3), td:nth-child(3) { width: 35%; } /* 報酬名 */
+th:nth-child(1), td:nth-child(1) { width: 100%; } /* 名前 */
 
 th {
     background-color: #9146ff;
@@ -248,6 +221,6 @@ tr:last-child td {
     }
 
     table {
-        min-width: 600px;
+        min-width: auto;
     }
 }

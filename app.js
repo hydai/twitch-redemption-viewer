@@ -105,7 +105,7 @@ function extractRedemptions(jsonData) {
 
 // Format redeemer display name
 function formatRedeemer(userName, userLogin) {
-    if (userName === userLogin) {
+    if (userName.toLowerCase() === userLogin.toLowerCase()) {
         return userName;
     }
     return `${userName} (${userLogin})`;

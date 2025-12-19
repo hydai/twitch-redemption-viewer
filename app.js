@@ -85,7 +85,23 @@ function processFile(file) {
 function extractRedemptions(jsonData) {
     const redemptions = [];
 
+    // Pre-process: combine entries with same timestamp
+    // This handles cases where TCPR splits a single event across multiple log entries
+    const combinedEntries = [];
+    let currentGroup = null;
+
     for (const entry of jsonData) {
+        if (!currentGroup || currentGroup.timestamp !== entry.timestamp) {
+            if (currentGroup) combinedEntries.push(currentGroup);
+            currentGroup = { timestamp: entry.timestamp, message: entry.message || '' };
+        } else {
+            currentGroup.message += '\n' + (entry.message || '');
+        }
+    }
+    if (currentGroup) combinedEntries.push(currentGroup);
+
+    // Process combined entries
+    for (const entry of combinedEntries) {
         if (entry.message && entry.message.includes('REWARD REDEMPTION EVENT RECEIVED')) {
             const eventData = extractEventData(entry.message);
             if (eventData) {

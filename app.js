@@ -85,13 +85,20 @@ function processFile(file) {
 function extractRedemptions(jsonData) {
     const redemptions = [];
 
-    // Pre-process: combine entries with same timestamp
+    // Pre-process: combine entries within 100ms of each other
     // This handles cases where TCPR splits a single event across multiple log entries
+    // with slightly different timestamps (e.g., .231Z vs .232Z)
     const combinedEntries = [];
     let currentGroup = null;
 
+    const getTimestampMs = (ts) => new Date(ts).getTime();
+    const TIMESTAMP_TOLERANCE_MS = 100; // 100ms tolerance
+
     for (const entry of jsonData) {
-        if (!currentGroup || currentGroup.timestamp !== entry.timestamp) {
+        const entryTime = getTimestampMs(entry.timestamp);
+        const groupTime = currentGroup ? getTimestampMs(currentGroup.timestamp) : 0;
+
+        if (!currentGroup || (entryTime - groupTime) > TIMESTAMP_TOLERANCE_MS) {
             if (currentGroup) combinedEntries.push(currentGroup);
             currentGroup = { timestamp: entry.timestamp, message: entry.message || '' };
         } else {
